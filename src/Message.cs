@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Hestia.MQ.Abstractions
 {
@@ -39,6 +35,7 @@ namespace Hestia.MQ.Abstractions
 
         public string Source { get; set; }
 
+        public string State { get; set; }
         public Dictionary<string, string> Properties { get; private set; } = new Dictionary<string, string>();
     }
 }
