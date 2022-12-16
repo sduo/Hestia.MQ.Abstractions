@@ -4,10 +4,12 @@ namespace Hestia.MQ.Abstractions
 {
     public interface IStore
     {
-        public Task<int> PublishAsync(Message message);
+        public Task<int?> BeginPublishAsync(Message message);
 
-        public Task<int> ConsumeAsync(Message message);
+        public Task<int?> EndPublishAsync(Message message);
 
-        public Task<int> ReportAsync(Message message);
+        public Task<int?> BeginConsumeAsync(Message message);
+
+        public Task<int?> EndConsumeAsync(Message message);
     }
 }
