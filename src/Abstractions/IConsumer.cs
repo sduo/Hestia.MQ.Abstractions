@@ -7,6 +7,8 @@ namespace Hestia.MQ.Abstractions
     {
         public string Group { get; }
 
-        public Task<List<Message>> Consume();
+        public Task<List<Message>> ConsumeAsync();
+
+        public Task<byte> RebuildAsync(Message message);
     }
 }
