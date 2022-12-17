@@ -51,7 +51,7 @@ namespace Hestia.MQ.Abstractions
         /// <summary>
         /// 投递延迟
         /// </summary>
-        public ulong Offset { get; set; }
+        public ulong DeliverAt { get; set; }
         /// <summary>
         /// 投递来源
         /// </summary>
@@ -65,13 +65,13 @@ namespace Hestia.MQ.Abstractions
         /// </summary>
         public uint TotalConsumed { set; get; }     
         /// <summary>
-        /// 消费状态
+        /// 状态码
         /// </summary>
-        public int State { get; set; }
+        public int StatusCode { get; set; }
         /// <summary>
-        /// 消费结果
+        /// 状态说明
         /// </summary>
-        public string Code { get; set; }
+        public string ReasonPhrase { get; set; }
         /// <summary>
         /// 属性
         /// </summary>

@@ -30,15 +30,25 @@ namespace Hestia.MQ
             {
                 int rows = await store.BeginPublishAsync(message);
                 if (rows == 0) { return 0x0201; }
-            }           
-            
-            byte code = await producer.PublishAsync(message);
-
-            if(store!= null)
-            {
-                await store.EndPublishAsync(message);
             }
-
+            int code = 0x0200;
+            try
+            {
+                code = await producer.PublishAsync(message);
+            }
+            catch (Exception ex)
+            {
+                code = 0x0202;
+                message.ReasonPhrase = ex.ToString();
+            }
+            finally
+            {
+                if (store != null)
+                {
+                    message.StatusCode = code;
+                    await store.EndPublishAsync(message);
+                }
+            }
             return code;
         }
     }

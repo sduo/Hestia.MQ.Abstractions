@@ -37,7 +37,7 @@ namespace Hestia.MQ
         private void Rebuild(Message message, string group, ulong offset)
         {
             message.Source = Name;
-            message.Offset = offset;
+            message.DeliverAt = offset;
             message.TotalConsumed += 1;
             message.ChainId = message.Id;
             message.TargetGroup = group;
@@ -65,8 +65,8 @@ namespace Hestia.MQ
                             int rows = await store.BeginConsumeAsync(message);
                             if (rows == 0)
                             {
-                                var offset = await worker.GetRepubishOffesetAsync(message);
-                                Rebuild(message, consumer.Group, offset);
+                                var ts = await worker.GetDeliverAtAsync(message);
+                                Rebuild(message, consumer.Group, ts);
                                 await consumer.RebuildAsync(message);
                                 await producer.PublishAsync(message);
                                 continue;
@@ -77,29 +77,41 @@ namespace Hestia.MQ
                         {
                             if (store != null)
                             {
-                                message.State = 0x0010;
+                                message.StatusCode = 0x0010;
+                                message.ReasonPhrase = $"targat:{message.TargetGroup};current:{consumer.Group}";
                                 await store.EndConsumeAsync(message);
                             }
                             continue;
                         }
 
-                        int code = await worker.OnMessageAsync(message);
-
-                        if (store != null)
+                        int code = 0x0200;
+                        try
                         {
-                            message.State = 0x0000;
-                            await store.EndConsumeAsync(message);
+                            code = await worker.OnMessageAsync(message);
                         }
+                        catch(Exception ex)
+                        {
+                            code = 0x0202;
+                            message.ReasonPhrase = ex.ToString();
+                            OnException?.Invoke(ex);
+                        }
+                        finally
+                        {
+                            if (store != null)
+                            {
+                                message.StatusCode = code;                                
+                                await store.EndConsumeAsync(message);
+                            }
+                        }                        
 
                         if (code > 0)
                         {
-                            var offset = await worker.GetRepubishOffesetAsync(message);
-                            Rebuild(message, consumer.Group, offset);
+                            var ts = await worker.GetDeliverAtAsync(message);
+                            Rebuild(message, consumer.Group, ts);
                             await consumer.RebuildAsync(message);
                             await producer.PublishAsync(message);
                         }
                     }
-
                 }
                 catch (Exception ex)
                 {
